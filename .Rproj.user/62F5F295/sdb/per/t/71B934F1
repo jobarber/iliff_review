@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# load necessary libraries\nlibrary(tm)\nlibrary(koRpus)\n\n# load custom stopword list\nir_stopwords <- read.csv(\"data/ir_stoplist.csv\", header = FALSE)\nir_stopwords <- as.character(ir_stopwords$V1)\n\n#functions\nabstractLemmas <- function(file){\n  tagged.text <- treetag(file, treetagger = \"manual\",\n                         lang=\"en\", TT.options=list(path=\"/Users/msaxton/treetagger/\", \n                                                    preset=\"en\"))\n  results <- taggedText(tagged.text)\n  lemmas <- results[,\"lemma\"]\n  return(lemmas)\n}\n\nmakeCorpus <- function(filenames){\n  file_path <- paste(\"data/iliff_corpus/\", filenames, sep=\"\")\n  files <- lapply(file_path, abstractLemmas)\n  text_corpus <- Corpus(VectorSource(files))\n  return(text_corpus)\n}\n\npreprocessCorpus <- function(text_corpus){\n  text_corpus <- tm_map(text_corpus, stripWhitespace)\n  text_corpus <- tm_map(text_corpus, content_transformer(tolower))\n  text_corpus <- tm_map(text_corpus, removeWords,ir_stopwords )\n  text_corpus <- tm_map(text_corpus, removeNumbers)\n  text_corpus <- tm_map(text_corpus, removePunctuation)\n  return(text_corpus)\n}\n\ncreateDTM <- function(corpus, filenames){\n  dtm <- DocumentTermMatrix(corpus)\n  rownames(dtm) <- filenames\n  return(dtm)\n}\n\ncreateCSV <- function(dtm, file_name){\n  m <- inspect(dtm)\n  DF <- as.data.frame(m, stringsAsFactors = FALSE)\n  write.csv(DF, file = file_name)\n}\n# load and divide corpus by decade\n\nfilenames60s <- list.files(\"./iliff_corpus\", pattern=\"^5|^6\")\nfilenames70s <- list.files(\"./iliff_corpus\", pattern=\"^7\")\nfilenames80s <- list.files(\"./iliff_corpus\", pattern=\"^8\")\n\ncorpus60s <- makeCorpus(filenames60s)\ncorpus60s <- preprocessCorpus(corpus60s)\ndtm60s <- createDTM(corpus60s, filenames60s)\ncreateCSV(dtm60s, \"data/dtm/dtm60s.csv\")\n\ncorpus70s <- makeCorpus(filenames70s)\ncorpus70s <- preprocessCorpus(corpus70s)\ndtm70s <- createDTM(corpus70s, filenames70s)\ncreateCSV(dtm70s, \"data/dtm/dtm70s.csv\")\n\ncorpus80s <- makeCorpus(filenames80s)\ncorpus80s <- preprocessCorpus(corpus80s)\ndtm80s <- createDTM(corpus80s, filenames80s)\ncreateCSV(dtm80s, \"data/dtm/dtm80s.csv\")\n",
+    "created" : 1484259765168.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4156660116",
+    "id" : "71B934F1",
+    "lastKnownWriteTime" : 1484593638,
+    "last_content_update" : 1484593638225,
+    "path" : "~/r_projects/iliff_review_project/data_prep.R",
+    "project_path" : "data_prep.R",
+    "properties" : {
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

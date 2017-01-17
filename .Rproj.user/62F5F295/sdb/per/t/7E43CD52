@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "'''\nmodified code from\nhttps://eight2late.wordpress.com/2015/09/29/a-gentle-introduction-to-topic-modeling-using-r/\n'''\nlibrary(tm)\nlibrary(topicmodels)\n\nsetwd(\"/Users/msaxton/r_projects/iliff_review_project/iliff_corpus\")\nfilenames <- list.files(getwd(), pattern=\"*.txt\")\n\n#read files into a character vecor\nfiles <- lapply(filenames, readLines)\n\n#create corpus from vector\ndocs <- Corpus(VectorSource(files))\n\n#preprocessing\n#lower case\ndocs <- tm_map(docs, content_transformer(tolower))\n#remove symbols\ntoSpace <- content_transformer(function(x, pattern) \n  { return (gsub(pattern, \" \", x))})\ndocs <- tm_map(docs, toSpace, \"-\")\ndocs <- tm_map(docs, toSpace, \"'\")\ndocs <- tm_map(docs, toSpace, '\"')\n\n#more preprocessing\ndocs <- tm_map(docs, removePunctuation)\ndocs <- tm_map(docs, removeNumbers)\ndocs <- tm_map(docs, removeWords, stopwords('en'))\ndocs <- tm_map(docs, stripWhitespace)\n\n#Stem document (or should it be lemmatized?)\ndocs <- tm_map(docs, stemDocument)\n\n#create document-term matrix\ndtm <- DocumentTermMatrix(docs)\nrownames(dtm) <- filenames\n\n#collapse matrix by summing over columns\nfreq <- colSums(as.matrix(dtm))\n\n#create sort order (descending)\nord <- order(freq, decreasing = TRUE)\n\n#list all terms in decreasing order of freq and write to disk\nword.freq <- freq[ord]\n#write.csv(x, \"iliff_word_freq.csv\")\n\n#set parameters for Gibbs sampling\nburnin <- 4000\niter <- 2000\nthin <- 500\nseed <- list(2003, 5, 63, 100001, 765)\nnstart <- 5\nbest <- TRUE\n\n#set number of topics\nk <- 10\n\n#run LDA using Gibbs sampling\nldaOut <- LDA(dtm, k, method = \"Gibbs\", control = list(\n  nstar=nstart, seed=seed, best=best, burnin = burnin,\n  iter = iter, thin = thin))\n\n\n# docs to topics; [i.e. document to topic assignments]\nldaOut.topics <- as.matrix(topics(ldaOut))\n\n#top ten term in each topic\nldaOut.terms <- as.matrix(terms(ldaOut, 10))\n\n#probabilities associated with each topic assignment\ntopicProbabilities <- as.data.frame(ldaOut@gamma)\n\n#Find relative importance of top 2 topics\ntopic1ToTopic2 <- lapply(1:nrow(dtm),function(x)\n  sort(topicProbabilities[x,])[k]/sort(topicProbabilities[x,])[k-1])\n\n#Find relative importance of second and third most important topics\ntopic2ToTopic3 <- lapply(1:nrow(dtm),function(x)\n  sort(topicProbabilities[x,])[k-1]/sort(topicProbabilities[x,])[k-2])\n\n#write output to csv files\nwrite.csv(ldaOut.topics,file=paste(\"LDAGibbs\",k,\"DocsToTopics.csv\"))\nwrite.csv(ldaOut.terms,file=paste(\"LDAGibbs\",k,\"TopicsToTerms.csv\"))\nwrite.csv(topicProbabilities,file=paste(\"LDAGibbs\",k,\"TopicProbabilities.csv\"))\nwrite.csv(topic1ToTopic2,file=paste(\"LDAGibbs\",k,\"Topic1ToTopic2.csv\"))\nwrite.csv(topic2ToTopic3,file=paste(\"LDAGibbs\",k,\"Topic2ToTopic3.csv\"))",
+    "created" : 1484593962662.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3251237665",
+    "id" : "7E43CD52",
+    "lastKnownWriteTime" : 1482259403,
+    "last_content_update" : 1482259403,
+    "path" : "~/r_projects/iliff_review_project/Untitled.R",
+    "project_path" : "Untitled.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

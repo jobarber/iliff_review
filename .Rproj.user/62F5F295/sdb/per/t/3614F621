@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\"\"\"\nThis is a short introduction to basic functionality of R based\non an article in Code4Lib by Monica Maceli which can be found at\nhttp://journal.code4lib.org/articles/11626\n\"\"\"\n\n# Set up files and corpus\nsetwd(\"~/r_projects/\")\ninputDir <- \"iliff_corpus\"\nfiles.v <- dir(path = inputDir, pattern = \".*txt\")\n\n# install necessary packages\ninstall.packages(\"tm\")\nlibrary(tm)\nsource(\"https://bioconductor.org/biocLite.R\")\nbiocLite(\"Rgraphviz\")\ninstall.packages(\"wordcloud\")\nlibrary(\"wordcloud\")\n\n#load corpus\ntext_corpus <- Corpus(DirSource(\"~/r_projects/iliff_corpus\"))\n\n#clean corpus\ntext_corpus <- tm_map(text_corpus, stripWhitespace)\ntext_corpus <- tm_map(text_corpus, content_transformer(tolower))\ntext_corpus <- tm_map(text_corpus, removeWords, stopwords(\"english\"))\ntext_corpus <- tm_map(text_corpus, stemDocument)\ntext_corpus <- tm_map(text_corpus, removeNumbers)\ntext_corpus <- tm_map(text_corpus, removePunctuation)\n\n#create document term matrix\ndtm <- DocumentTermMatrix(text_corpus)\n\n#reduce dtm by adjusting sparsity\ndtm2 <- removeSparseTerms(dtm, sparse=0.95)\n\n#or\ndtm3 <- DocumentTermMatrix(text_corpus, control = list(wordLengths=c(4, 20),\n                                                       bounds =list(global =\n                                                                      c(5,45))))\n#finding term frequencies\nfindFreqTerms(dtm3, lowfreq = 200)\nfreq <- sort(colSums(as.matrix(dtm3)), decreasing = TRUE)\nhead(freq, 50)\ntail(freq, 50)\n\n#Finding associated terms\nfindAssocs(dtm3, term = \"faith\", 0.7)\n\n#plot correlations\nplot(dtm3, terms = names(findAssocs(dtm3,terms = \"faith\", 0.5)[[\"faith\"]]),\n     corThreshold = 0.5)\n\n#wordclouds\nwordcloud(names(freq), freq, min.freq=200)\n\n#clustering: Notice we are creating a different kind of matrix\ntdm <- TermDocumentMatrix(text_corpus)\ntdm2 <- removeSparseTerms(tdm, sparse=0.1)\nd <- dist(as.matrix(tdm2))\nhc <- hclust(d)\nplot(hc)\n\ntopTerms <- function(dtm){\n  # freq <- findFreqTerms(dtm) #not sure what this line does\n  sortfreq <- sort(colSums(as.matrix(dtm)), decreasing = TRUE)\n  return(sortfreq)\n}\n\ncompareAssocTerms <- function(dtm_1, dtm_2, dtm_3, term, threshold=0.6){\n  print(findAssocs(dtm_1, term, threshold))\n  print(findAssocs(dtm_2, term, threshold))\n  print(findAssocs(dtm_3, term, threshold))\n}",
+    "created" : 1482260872078.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "253274758",
+    "id" : "3614F621",
+    "lastKnownWriteTime" : 1484596837,
+    "last_content_update" : 1484596837331,
+    "path" : "~/r_projects/iliff_review_project/iliff_intro.R",
+    "project_path" : "iliff_intro.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
