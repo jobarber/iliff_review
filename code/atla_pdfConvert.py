@@ -8,6 +8,11 @@ import PyPDF2
 import re
 import os
 
+import pip
+pip.main(['install', 'destruction'])
+
+import destruction
+
 in_path = '/Users/msaxton/PycharmProjects/iliff_review/pdfs/scanned/'
 out_path = '/Users/msaxton/r_projects/iliff_review_project/iliff_corpus/'
 
